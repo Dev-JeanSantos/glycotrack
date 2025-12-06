@@ -1,13 +1,13 @@
 package com.glycotrack.adapter.web.controller
 
-import com.glycotrack.application.port.`in`.RegisterGlucoseMeasurementPort
-import com.glycotrack.application.port.out.FindMeasurementsByPatientIdPort
-import com.glycotrack.application.port.out.FindMeasurementsByPeriodPort
-import com.glycotrack.domain.model.GlucoseMeasurement
 import com.glycotrack.adapter.web.dto.GlucoseMeasurementRequest
+import com.glycotrack.adapter.web.dto.GlucoseMeasurementResponse
 import com.glycotrack.adapter.web.mapper.WebMapper
+import com.glycotrack.application.port.`in`.RegisterGlucoseMeasurementPort
+import com.glycotrack.application.port.out.FindMeasurementsByPeriodPort
 import com.glycotrack.application.usecase.GetGlucoseMeasurementsUseCase
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
@@ -22,8 +22,16 @@ class GlucoseMeasurementController(
 ) {
 
     @PostMapping
-    fun create(@RequestBody request: GlucoseMeasurementRequest) =
-        ResponseEntity.ok(mapper.toResponse(registerPort.register(mapper.toDomain(request))))
+    fun create(@RequestBody request: GlucoseMeasurementRequest): ResponseEntity<GlucoseMeasurementResponse> {
+        val domain = mapper.toDomain(request)
+        val saved = registerPort.register(domain)
+        val response = mapper.toResponse(saved)
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(response)
+    }
+
 
     @GetMapping
     fun listByPeriod(
@@ -33,7 +41,8 @@ class GlucoseMeasurementController(
     ) = ResponseEntity.ok(findPort.find(patientId, from, to).map { mapper.toResponse(it) })
 
     @GetMapping("/patient/{patientId}")
-    fun getAllByPatientId(@PathVariable patientId: Long): List<GlucoseMeasurement> {
-        return getGlucoseMeasurementsUseCase.execute(patientId)
+    fun getAllByPatientId(@PathVariable patientId: Long): ResponseEntity<List<GlucoseMeasurementResponse>> {
+        val measurements = getGlucoseMeasurementsUseCase.execute(patientId)
+        return ResponseEntity.ok(measurements.map { mapper.toResponse(it) })
     }
 }
