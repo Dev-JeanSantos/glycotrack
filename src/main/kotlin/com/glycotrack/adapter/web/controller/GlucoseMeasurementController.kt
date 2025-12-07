@@ -10,7 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/v1/api/measurements")
@@ -35,10 +35,10 @@ class GlucoseMeasurementController(
 
     @GetMapping
     fun listByPeriod(
-        @RequestParam patientId: Long,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: LocalDateTime,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: LocalDateTime
-    ) = ResponseEntity.ok(findMeasurementsByPeriodUseCase.execute(patientId, from, to).map { mapper.toResponse(it) })
+        @RequestParam  patient_id: Long,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: LocalDate
+    ) = ResponseEntity.ok(findMeasurementsByPeriodUseCase.execute(patient_id, from, to).map { mapper.toResponse(it) })
 
     @GetMapping("/patient/{patientId}")
     fun getAllByPatientId(@PathVariable patientId: Long): ResponseEntity<List<GlucoseMeasurementResponse>> {

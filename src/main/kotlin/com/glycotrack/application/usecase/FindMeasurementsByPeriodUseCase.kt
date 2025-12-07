@@ -1,8 +1,8 @@
 package com.glycotrack.application.usecase
 
 import com.glycotrack.domain.model.GlucoseMeasurement
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 interface FindMeasurementsByPeriodUseCase {
-    fun execute(patientId: Long, from: LocalDateTime, to: LocalDateTime): List<GlucoseMeasurement>
+    fun execute(patientId: Long, from: LocalDate, to: LocalDate): List<GlucoseMeasurement>
 }
