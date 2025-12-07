@@ -4,6 +4,7 @@ package com.glycotrack.adapter.persistence.adapter
 import com.glycotrack.adapter.persistence.mapper.GlucoseMeasurementMapper
 import com.glycotrack.adapter.persistence.repository.GlucoseMeasurementJpaRepository
 import com.glycotrack.application.port.`in`.SaveGlucoseMeasurementPort
+import com.glycotrack.application.port.out.FindAllByPatientIdEagerPort
 import com.glycotrack.application.port.out.FindMeasurementsByPatientIdPort
 import com.glycotrack.application.port.out.FindMeasurementsByPeriodPort
 import com.glycotrack.domain.model.GlucoseMeasurement
@@ -14,7 +15,7 @@ import java.time.LocalDateTime
 class GlucoseMeasurementRepositoryAdapterByPeriod(
     private val jpaRepository: GlucoseMeasurementJpaRepository,
     private val mapper: GlucoseMeasurementMapper
-) : SaveGlucoseMeasurementPort, FindMeasurementsByPatientIdPort, FindMeasurementsByPeriodPort{
+) : SaveGlucoseMeasurementPort, FindMeasurementsByPatientIdPort, FindMeasurementsByPeriodPort, FindAllByPatientIdEagerPort{
 
     override fun save(measurement: GlucoseMeasurement): GlucoseMeasurement {
         val entity = mapper.toEntity(measurement)
@@ -47,4 +48,8 @@ class GlucoseMeasurementRepositoryAdapterByPeriod(
         return  result.map { mapper.toDomain(it) }
     }
 
+    override fun findAllByPatientIdEager(patientId: Long): List<GlucoseMeasurement> {
+        val entities = jpaRepository.findAllByPatientIdEager(patientId)
+        return entities.map { mapper.toDomain(it) }
+    }
 }

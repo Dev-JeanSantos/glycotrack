@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class MetricsUpdater(private val glucoseMetricsService: GlucoseMetricsService) {
     private val logger = LoggerFactory.getLogger(MetricsUpdater::class.java)
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 10000)
     fun updateAll() {
         logger.info("execution metrics")
         glucoseMetricsService.calculateMetrics(1L)

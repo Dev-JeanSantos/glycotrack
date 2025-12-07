@@ -1,55 +1,55 @@
 package com.glycotrack.application.service
 
 import com.glycotrack.adapter.web.dto.GlucoseMetrics
-import com.glycotrack.application.port.out.FindMeasurementsByPatientIdPort
+import com.glycotrack.application.port.out.FindAllByPatientIdEagerPort
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Service
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
 @Service
 class GlucoseMetricsService(
-    private val findMeasurementsByPatientIdPort: FindMeasurementsByPatientIdPort,
+    private val findAllByPatientIdEagerPort: FindAllByPatientIdEagerPort,
     private val meterRegistry: MeterRegistry
 ) {
 
-    private val fastingAvg = AtomicReference(0.0)
-    private val postMealAvg = AtomicReference(0.0)
-    private val overallMax = AtomicReference(0.0)
-    private val overallMin = AtomicReference(0.0)
+    private val overallMax = ConcurrentHashMap<Long, AtomicReference<Double>>()
+    private val overallMin = ConcurrentHashMap<Long, AtomicReference<Double>>()
 
-    init {
-        Gauge.builder("glucose.fasting.avg") { fastingAvg.get() }
-            .register(meterRegistry)
-        Gauge.builder("glucose.post_meal.avg") { postMealAvg.get() }
-            .register(meterRegistry)
-        Gauge.builder("glucose.overall.max") { overallMax.get() }
-            .register(meterRegistry)
-        Gauge.builder("glucose.overall.min") { overallMin.get() }
-            .register(meterRegistry)
+    private fun ensureGaugeRegistered(name: String, patientId: Long, ref: AtomicReference<Double>) {
+        // Registrar apenas se ainda não tiver registrado
+        val existingGauge = meterRegistry.find(name).tags("patientId", patientId.toString()).gauge()
+        if (existingGauge == null) { // <-- aqui
+            Gauge.builder(name, ref) { it.get() }
+                .tags("patientId", patientId.toString())
+                .register(meterRegistry)
+        }
     }
 
     fun calculateMetrics(patientId: Long): GlucoseMetrics {
-        val measurements = findMeasurementsByPatientIdPort.findAllByPatientId(patientId)
-
+        val measurements = findAllByPatientIdEagerPort.findAllByPatientIdEager(patientId)
         val allValues = measurements.mapNotNull { it.valueMgPerDl }
-        val fasting = measurements.filter { it.type.name == "FASTING" }.mapNotNull { it.valueMgPerDl }
-        val postMeal = measurements.filter { it.type.name == "POST_MEAL" }.mapNotNull { it.valueMgPerDl }
+
+        overallMax.putIfAbsent(patientId, AtomicReference(0.0))
+        overallMin.putIfAbsent(patientId, AtomicReference(0.0))
 
         if (allValues.isNotEmpty()) {
-            fastingAvg.set(fasting.averageOrNull() ?: 0.0)
-            postMealAvg.set(postMeal.averageOrNull() ?: 0.0)
-            overallMax.set(allValues.maxOrNull()?.toDouble() ?: 0.0)
-            overallMin.set(allValues.minOrNull()?.toDouble() ?: 0.0)
+            overallMax[patientId]?.set(allValues.maxOrNull()?.toDouble() ?: 0.0)
+            overallMin[patientId]?.set(allValues.minOrNull()?.toDouble() ?: 0.0)
         }
+
+        // Registra gauges apenas uma vez
+        ensureGaugeRegistered("glucose_overall_max", patientId, overallMax[patientId]!!)
+        ensureGaugeRegistered("glucose_overall_min", patientId, overallMin[patientId]!!)
 
         return GlucoseMetrics(
             patientId = patientId,
-            meanFasting = fastingAvg.get(),
-            minFasting = overallMin.get().toInt(),
-            maxFasting = overallMax.get().toInt(),
-            meanPostMeal = postMealAvg.get(),
-            maxPostMeal = postMealAvg.get().toInt(),
+            meanFasting = 0.0,
+            minFasting = overallMin[patientId]?.get()?.toInt() ?: 0,
+            maxFasting = overallMax[patientId]?.get()?.toInt() ?: 0,
+            meanPostMeal = 0.0,
+            maxPostMeal = 0,
             avgMinutesAfterMeal = null,
             meanRandom = null,
             minRandom = null,
@@ -59,6 +59,4 @@ class GlucoseMetricsService(
             readingsOutOfRange = 0
         )
     }
-
-    private fun List<Int>.averageOrNull(): Double? = if (isNotEmpty()) average() else null
 }
