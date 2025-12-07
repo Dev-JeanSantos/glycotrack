@@ -3,9 +3,9 @@ package com.glycotrack.adapter.web.controller
 import com.glycotrack.adapter.web.dto.GlucoseMeasurementRequest
 import com.glycotrack.adapter.web.dto.GlucoseMeasurementResponse
 import com.glycotrack.adapter.web.mapper.WebMapper
-import com.glycotrack.application.port.`in`.RegisterGlucoseMeasurementPort
 import com.glycotrack.application.usecase.FindMeasurementsByPeriodUseCase
 import com.glycotrack.application.usecase.GetGlucoseMeasurementsByPatientIdUseCase
+import com.glycotrack.application.usecase.RegisterGlucoseMeasurementUseCase
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 @RestController
 @RequestMapping("/v1/api/measurements")
 class GlucoseMeasurementController(
-    private val registerPort: RegisterGlucoseMeasurementPort,
+    private val registerGlucoseMeasurementUseCase: RegisterGlucoseMeasurementUseCase,
     private val findMeasurementsByPeriodUseCase: FindMeasurementsByPeriodUseCase,
     private val getGlucoseMeasurementsByPatientIdUseCase: GetGlucoseMeasurementsByPatientIdUseCase,
     private val mapper: WebMapper
@@ -24,7 +24,7 @@ class GlucoseMeasurementController(
     @PostMapping
     fun create(@RequestBody request: GlucoseMeasurementRequest): ResponseEntity<GlucoseMeasurementResponse> {
         val domain = mapper.toDomain(request)
-        val saved = registerPort.register(domain)
+        val saved = registerGlucoseMeasurementUseCase.execute(domain)
         val response = mapper.toResponse(saved)
 
         return ResponseEntity
