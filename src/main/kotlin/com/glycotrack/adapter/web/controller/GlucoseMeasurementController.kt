@@ -4,8 +4,8 @@ import com.glycotrack.adapter.web.dto.GlucoseMeasurementRequest
 import com.glycotrack.adapter.web.dto.GlucoseMeasurementResponse
 import com.glycotrack.adapter.web.mapper.WebMapper
 import com.glycotrack.application.port.`in`.RegisterGlucoseMeasurementPort
-import com.glycotrack.application.port.out.FindMeasurementsByPeriodPort
-import com.glycotrack.application.usecase.GetGlucoseMeasurementsUseCase
+import com.glycotrack.application.usecase.FindMeasurementsByPeriodUseCase
+import com.glycotrack.application.usecase.GetGlucoseMeasurementsByPatientIdUseCase
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,8 +16,8 @@ import java.time.LocalDateTime
 @RequestMapping("/v1/api/measurements")
 class GlucoseMeasurementController(
     private val registerPort: RegisterGlucoseMeasurementPort,
-    private val findPort: FindMeasurementsByPeriodPort,
-    private val getGlucoseMeasurementsUseCase: GetGlucoseMeasurementsUseCase,
+    private val findMeasurementsByPeriodUseCase: FindMeasurementsByPeriodUseCase,
+    private val getGlucoseMeasurementsByPatientIdUseCase: GetGlucoseMeasurementsByPatientIdUseCase,
     private val mapper: WebMapper
 ) {
 
@@ -38,11 +38,11 @@ class GlucoseMeasurementController(
         @RequestParam patientId: Long,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: LocalDateTime,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: LocalDateTime
-    ) = ResponseEntity.ok(findPort.find(patientId, from, to).map { mapper.toResponse(it) })
+    ) = ResponseEntity.ok(findMeasurementsByPeriodUseCase.execute(patientId, from, to).map { mapper.toResponse(it) })
 
     @GetMapping("/patient/{patientId}")
     fun getAllByPatientId(@PathVariable patientId: Long): ResponseEntity<List<GlucoseMeasurementResponse>> {
-        val measurements = getGlucoseMeasurementsUseCase.execute(patientId)
+        val measurements = getGlucoseMeasurementsByPatientIdUseCase.execute(patientId)
         return ResponseEntity.ok(measurements.map { mapper.toResponse(it) })
     }
 }

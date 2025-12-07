@@ -1,7 +1,6 @@
 package com.glycotrack.adapter.persistence.repository
 
 
-import com.glycotrack.domain.model.GlucoseMeasurement
 import com.glycotrack.adapter.persistence.entity.GlucoseMeasurementEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import java.time.LocalDateTime
