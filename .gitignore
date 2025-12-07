@@ -17,7 +17,6 @@ gradle-app.setting
 application-local.yml
 application-dev.yml
 application-test.yml
-application.properties
 application.yml
 
 ### IntelliJ IDEA ###
