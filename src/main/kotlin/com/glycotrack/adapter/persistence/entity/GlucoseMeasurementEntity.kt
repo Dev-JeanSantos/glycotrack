@@ -9,7 +9,7 @@ data class GlucoseMeasurementEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
     val patientId: Long,
-    val timestamp: LocalDateTime,
+    val timestamp: LocalDateTime?,
     val valueMgPerDl: Int,
     val type: String,
     val minutesAfterMeal: Int? = null,

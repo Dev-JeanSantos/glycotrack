@@ -35,10 +35,17 @@ class GlucoseMeasurementController(
 
     @GetMapping
     fun listByPeriod(
-        @RequestParam  patient_id: Long,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: LocalDate
-    ) = ResponseEntity.ok(findMeasurementsByPeriodUseCase.execute(patient_id, from, to).map { mapper.toResponse(it) })
+
+        @RequestParam("patient_id") patientId: Long,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        from: LocalDate? = null,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        to: LocalDate? = null
+    ) = ResponseEntity.ok(findMeasurementsByPeriodUseCase.execute(patientId, from, to).map { mapper.toResponse(it) })
 
     @GetMapping("/patient/{patientId}")
     fun getAllByPatientId(@PathVariable patientId: Long): ResponseEntity<List<GlucoseMeasurementResponse>> {

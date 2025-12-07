@@ -26,8 +26,25 @@ class GlucoseMeasurementRepositoryAdapterByPeriod(
         return jpaRepository.findAllByPatientId(patientId).map { mapper.toDomain(it) }
     }
 
-    override fun findAllByPatientId(patientId: Long, from: LocalDateTime, to: LocalDateTime): List<GlucoseMeasurement> {
-        return jpaRepository.findByPatientIdAndTimestampBetween(patientId, from, to).map { mapper.toDomain(it) }
+    override fun findAllByPatientId(patientId: Long, from: LocalDateTime?, to: LocalDateTime?): List<GlucoseMeasurement> {
+
+        val result = when {
+            from == null && to == null ->
+                jpaRepository.findAllByPatientId(patientId)
+
+            from != null && to == null ->
+                jpaRepository.findByPatientIdAndTimestampGreaterThanEqual(patientId, from)
+
+            from != null && to != null ->
+                jpaRepository.findByPatientIdAndTimestampBetween(patientId, from, to)
+
+            from == null && to != null ->
+                jpaRepository.findAllByPatientId(patientId)
+                    .filter { it.timestamp!! <= to }
+            else -> emptyList()
+        }
+
+        return  result.map { mapper.toDomain(it) }
     }
 
 }

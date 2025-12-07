@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 data class GlucoseMeasurement(
     val id: Long? = null,
     val patientId: Long,
-    val timestamp: LocalDateTime,
+    val timestamp: LocalDateTime?,
     val valueMgPerDl: Int,
     val type: MeasurementType,
     val minutesAfterMeal: Int? = null,

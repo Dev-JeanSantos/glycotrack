@@ -6,6 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.time.LocalDateTime
 
 interface GlucoseMeasurementJpaRepository : JpaRepository<GlucoseMeasurementEntity, Long> {
-    fun findByPatientIdAndTimestampBetween(patientId: Long, from: LocalDateTime, to: LocalDateTime): List<GlucoseMeasurementEntity>
+
+    fun findByPatientIdAndTimestampGreaterThanEqual(
+        patientId: Long,
+        from: LocalDateTime
+    ): List<GlucoseMeasurementEntity>
+
+    fun findByPatientIdAndTimestampBetween(
+        patientId: Long,
+        from: LocalDateTime,
+        to: LocalDateTime
+    ): List<GlucoseMeasurementEntity>
+
     fun findAllByPatientId(patientId: Long): List<GlucoseMeasurementEntity>
 }

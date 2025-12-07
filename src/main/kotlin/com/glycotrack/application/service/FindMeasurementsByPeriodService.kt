@@ -11,10 +11,12 @@ import java.time.LocalTime
 class FindMeasurementsByPeriodService(
     private val port: FindMeasurementsByPeriodPort
 ) : FindMeasurementsByPeriodUseCase {
-    override fun execute(patientId: Long, from: LocalDate, to: LocalDate): List<GlucoseMeasurement> {
-       val newFrom = from.atTime(LocalTime.MAX)
-       val newTo = to.atTime(LocalTime.MAX)
+    override fun execute(patientId: Long, from: LocalDate?, to: LocalDate?): List<GlucoseMeasurement> {
+       val newFrom = from?.atTime(LocalTime.MAX)
+       val newTo = to?.atTime(LocalTime.MAX)
        return port.findAllByPatientId(patientId, newFrom, newTo)
     }
+
+
 
 }
