@@ -17,7 +17,14 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 repositories { mavenCentral() }
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+
+    //Jpa
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    //Metrics
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
